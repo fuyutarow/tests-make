@@ -1,5 +1,7 @@
-includes = ["examples/others/tests.toml"]
-
+[env]
+INPUT = '''
+tests-make
+'''
 
 [tests.hello-success]
 script = '''

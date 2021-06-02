@@ -344,7 +344,7 @@ dependencies = [
 
 [[package]]
 name = "tests-make"
-version = "0.202106.2"
+version = "0.202106.3"
 dependencies = [
  "anyhow",
  "colored",

@@ -98,10 +98,11 @@ impl Manager {
     }
 
     pub fn run(&self) -> anyhow::Result<()> {
-        let mut workspace = Workspace::from(self.to_owned());
+        let mut workspaces = Map::<String, Workspace>::new();
+        workspaces.insert("".to_owned(), Workspace::from(self.to_owned()));
 
         if let Some(includes) = self.includes.to_owned() {
-            let workspaces = includes
+            includes
                 .iter()
                 .filter_map(|(fpath)| match Self::from_fpath(fpath.to_owned()) {
                     Ok(manager) => {
@@ -110,21 +111,36 @@ impl Manager {
                     }
                     Err(_) => None,
                 })
-                .collect::<HashMap<String, Workspace>>();
+                .for_each(|(name, workspace)| {
+                    workspaces.insert(name, workspace);
+                });
         }
+        for (workspace_name, workspace) in workspaces.iter_mut() {
+            workspace.run()?;
 
-        workspace.run()?;
-
-        {
-            for (test_name, test_result) in workspace.success_tests {
-                println!("{} ... {}", &test_name, "ok".green());
+            for (test_name, test_result) in workspace.to_owned().success_tests {
+                let name = if workspace_name == "" {
+                    test_name
+                } else {
+                    vec![workspace_name.as_str(), test_name.as_str()].join("/")
+                };
+                println!("{} ... {}", &name, "ok".green());
             }
 
             println!();
+        }
+        println!();
 
-            for (test_name, test_result) in workspace.fail_tests {
-                print!("{} ... ", test_name);
+        for (workspace_name, workspace) in workspaces.iter_mut() {
+            workspace.run()?;
 
+            for (test_name, test_result) in workspace.to_owned().fail_tests {
+                let name = if workspace_name == "" {
+                    test_name
+                } else {
+                    vec![workspace_name.as_str(), test_name.as_str()].join("/")
+                };
+                print!("{} ... ", name);
                 print_diff(&test_result.output, &test_result.tobe);
             }
         }
