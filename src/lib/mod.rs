@@ -25,6 +25,7 @@ pub struct TestResult {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Config {
     pub tests: Map<String, Test>,
+    pub env: HashMap<String, String>,
 }
 
 impl Config {
@@ -38,7 +39,7 @@ impl Config {
     }
 
     pub fn run(self) -> anyhow::Result<()> {
-        let env_vars = HashMap::<String, String>::new();
+        let env_vars = self.env;
         let options = run_script::ScriptOptions {
             runner: None,
             working_directory: None,

@@ -1,4 +1,9 @@
-[tests.hello_success]
+[env]
+INPUT = '''
+tests-make
+'''
+
+[tests.hello-success]
 script = '''
 echo hello, world!
 '''
@@ -6,10 +11,18 @@ tobe = '''
 hello, world!
 '''
 
-[tests.hello_fail]
+[tests.hello-fail]
 script = '''
 echo hello
 '''
 tobe = '''
 hello, world!
+'''
+
+[tests.hello-tests-make]
+script = '''
+echo hello, ${INPUT}
+'''
+tobe = '''
+hello, tests-make
 '''
