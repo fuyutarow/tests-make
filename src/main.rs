@@ -7,7 +7,7 @@ use lib::Config;
 #[derive(StructOpt, Debug)]
 struct Opt {
     /// Input toml file
-    #[structopt(parse(from_os_str,), default_value = "tests.toml")]
+    #[structopt(parse(from_os_str,), default_value = "tests-make.toml")]
     fpath: PathBuf,
 }
 

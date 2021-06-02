@@ -79,7 +79,7 @@ impl Config {
             for (test_name, test_result) in fail_tests {
                 print!("{} ... ", test_name);
 
-                print_diff(&test_result.tobe, &test_result.output);
+                print_diff(&test_result.output, &test_result.tobe);
             }
         }
         Ok(())
