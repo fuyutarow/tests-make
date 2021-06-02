@@ -1,14 +1,12 @@
 [package]
 version = '0.202106.0'
 name = 'tests-make'
-description = 'A CLI tool for tests'
-edition = '2018'
-license = 'MIT'
-authors = ['fuyutarow <fuyutarow@gmail.com>']
-repository = 'https://github.com/fuyutarow/tests-make'
-keywords = ['snippet']
-categories = ['command-line-utilities']
-readme = 'README.md'
+description = "Write and run tests in TOML"
+homepage = "https://github.com/fuyutarow/tests-make"
+repository = "https://github.com/fuyutarow/tests-make"
+authors = ["FUKUDA Yutaro <fuyutarow@gmail.com>"]
+license = "MIT"
+readme = "README.md"
 
 [lib]
 name = 'cli'

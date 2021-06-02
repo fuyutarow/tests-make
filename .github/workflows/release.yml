@@ -9,7 +9,6 @@ jobs:
   build:
     strategy:
       matrix:
-        # os: [ubuntu-latest, macOS-latest, windows-latest]
         os: [ubuntu-latest, macOS-latest]
         rust: [stable]
 
@@ -19,7 +18,7 @@ jobs:
       - name: Set envs
         id: set_envs
         run: |
-          echo ::set-output name=bin_name::snippets-make
+          echo ::set-output name=bin_name::tests-make
           echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
         env:
           GITHUB_REF: ${{ github.ref }}
@@ -29,16 +28,13 @@ jobs:
           rust-version: ${{ matrix.rust }}
       - name: Checkout
         uses: actions/checkout@v1
-      - name: Setup MUSL
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          rustup target add x86_64-unknown-linux-musl
-          sudo apt-get -qq install musl-tools
       - name: Build for Linux
         if: matrix.os == 'ubuntu-latest'
         id: build_linux
         run: |
           BIN_ZIP=./${BIN_NAME}-${VERSION}-x86_64-linux.zip
+          rustup target add x86_64-unknown-linux-musl
+          sudo apt-get -qq install musl-tools
           cargo build --locked --release --target=x86_64-unknown-linux-musl
           zip -j ${BIN_ZIP} target/x86_64-unknown-linux-musl/release/${BIN_NAME}
           echo "::set-output name=sha::$(shasum -a 256 ${BIN_ZIP} |awk '{print $1}')"
@@ -101,7 +97,7 @@ jobs:
       - name: Set envs
         id: set_envs
         run: |
-          echo ::set-output name=bin_name::snippets-make
+          echo ::set-output name=bin_name::tests-make
       - name: Dispatch homebrew Repository final
         uses: peter-evans/repository-dispatch@v1
         with:
