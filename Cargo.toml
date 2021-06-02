@@ -1,5 +1,5 @@
 [package]
-version = '0.202106.3'
+version = '0.202106.4'
 name = 'tests-make'
 edition = '2018'
 description = "Write and run tests in TOML"

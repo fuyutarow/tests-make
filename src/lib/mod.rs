@@ -7,13 +7,13 @@ use colored::*;
 use indexmap::IndexMap as Map;
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct Test {
     pub script: String,
     pub tobe: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct TestResult {
     pub code: i32,
     pub output: String,
@@ -22,14 +22,14 @@ pub struct TestResult {
     pub pass: bool,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct Manager {
-    pub tests: Map<String, Test>,
+    pub tests: Option<Map<String, Test>>,
     pub env: Option<HashMap<String, String>>,
     pub includes: Option<Vec<PathBuf>>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct Workspace {
     pub tests: Map<String, Test>,
     pub env: HashMap<String, String>,
@@ -40,7 +40,7 @@ pub struct Workspace {
 impl From<Manager> for Workspace {
     fn from(manager: Manager) -> Self {
         Self {
-            tests: manager.tests,
+            tests: manager.tests.unwrap_or_default(),
             env: manager.env.unwrap_or_default(),
             success_tests: Map::default(),
             fail_tests: Map::default(),
