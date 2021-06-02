@@ -1,0 +1,15 @@
+[tests.hello_success]
+script = '''
+echo hello, world!
+'''
+tobe = '''
+hello, world!
+'''
+
+[tests.hello_fail]
+script = '''
+echo hello
+'''
+tobe = '''
+hello, world!
+'''
