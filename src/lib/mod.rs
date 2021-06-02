@@ -23,23 +23,34 @@ pub struct TestResult {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct Config {
+pub struct Manager {
     pub tests: Map<String, Test>,
-    pub env: HashMap<String, String>,
+    pub env: Option<HashMap<String, String>>,
+    pub includes: Option<Vec<PathBuf>>,
 }
 
-impl Config {
-    pub fn from_fpath(fpath: PathBuf) -> anyhow::Result<Self> {
-        let mut f = File::open(fpath).expect("file not found");
-        let mut contents = String::new();
-        f.read_to_string(&mut contents)
-            .expect("something went wrong reading the file");
-        let config = toml::from_str::<Self>(&contents)?;
-        Ok(config)
-    }
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct Workspace {
+    pub tests: Map<String, Test>,
+    pub env: HashMap<String, String>,
+    pub success_tests: Map<String, TestResult>,
+    pub fail_tests: Map<String, TestResult>,
+}
 
-    pub fn run(self) -> anyhow::Result<()> {
-        let env_vars = self.env;
+impl From<Manager> for Workspace {
+    fn from(manager: Manager) -> Self {
+        Self {
+            tests: manager.tests,
+            env: manager.env.unwrap_or_default(),
+            success_tests: Map::default(),
+            fail_tests: Map::default(),
+        }
+    }
+}
+
+impl Workspace {
+    pub fn run(&mut self) -> anyhow::Result<()> {
+        let env_vars = self.env.to_owned();
         let options = run_script::ScriptOptions {
             runner: None,
             working_directory: None,
@@ -52,7 +63,7 @@ impl Config {
 
         let mut success_tests = Map::<String, TestResult>::new();
         let mut fail_tests = Map::<String, TestResult>::new();
-        self.tests.into_iter().for_each(|(test_name, test)| {
+        self.tests.iter().for_each(|(test_name, test)| {
             let (code, output, error) = run_script::run(&test.script, &vec![], &options).unwrap();
 
             let res = TestResult {
@@ -60,24 +71,58 @@ impl Config {
                 code,
                 output,
                 error,
-                tobe: test.tobe,
+                tobe: test.tobe.to_owned(),
             };
 
             if res.pass {
-                success_tests.insert(test_name, res);
+                success_tests.insert(test_name.to_owned(), res);
             } else {
-                fail_tests.insert(test_name, res);
+                fail_tests.insert(test_name.to_owned(), res);
             }
         });
 
+        self.success_tests = success_tests;
+        self.fail_tests = fail_tests;
+        Ok(())
+    }
+}
+
+impl Manager {
+    pub fn from_fpath(fpath: PathBuf) -> anyhow::Result<Self> {
+        let mut f = File::open(fpath).expect("file not found");
+        let mut contents = String::new();
+        f.read_to_string(&mut contents)
+            .expect("something went wrong reading the file");
+        let manager = toml::from_str::<Self>(&contents)?;
+        Ok(manager)
+    }
+
+    pub fn run(&self) -> anyhow::Result<()> {
+        let mut workspace = Workspace::from(self.to_owned());
+
+        if let Some(includes) = self.includes.to_owned() {
+            let workspaces = includes
+                .iter()
+                .filter_map(|(fpath)| match Self::from_fpath(fpath.to_owned()) {
+                    Ok(manager) => {
+                        let workspace_name = fpath.file_stem().unwrap().to_str().unwrap();
+                        Some((workspace_name.to_owned(), Workspace::from(manager)))
+                    }
+                    Err(_) => None,
+                })
+                .collect::<HashMap<String, Workspace>>();
+        }
+
+        workspace.run()?;
+
         {
-            for (test_name, test_result) in success_tests {
+            for (test_name, test_result) in workspace.success_tests {
                 println!("{} ... {}", &test_name, "ok".green());
             }
 
             println!();
 
-            for (test_name, test_result) in fail_tests {
+            for (test_name, test_result) in workspace.fail_tests {
                 print!("{} ... ", test_name);
 
                 print_diff(&test_result.output, &test_result.tobe);

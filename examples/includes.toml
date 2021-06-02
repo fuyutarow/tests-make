@@ -1,0 +1,26 @@
+includes = ["examples/tests.toml"]
+
+
+[tests.hello-success]
+script = '''
+echo hello, world!
+'''
+tobe = '''
+hello, world!
+'''
+
+[tests.hello-fail]
+script = '''
+echo hello
+'''
+tobe = '''
+hello, world!
+'''
+
+[tests.hello-tests-make]
+script = '''
+echo hello, ${INPUT}
+'''
+tobe = '''
+hello, tests-make
+'''

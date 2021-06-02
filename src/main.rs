@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 mod lib;
-use lib::Config;
+use lib::Manager;
 
 #[derive(StructOpt, Debug)]
 struct Opt {
@@ -14,9 +14,9 @@ struct Opt {
 fn main() -> anyhow::Result<()> {
     match Opt::from_args() {
         Opt { fpath } => {
-            let config = Config::from_fpath(fpath)?;
+            let manager = Manager::from_fpath(fpath)?;
 
-            config.run()?;
+            manager.run()?;
         }
     }
     Ok(())
