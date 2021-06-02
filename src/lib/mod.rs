@@ -124,7 +124,7 @@ impl Manager {
                 } else {
                     vec![workspace_name.as_str(), test_name.as_str()].join("/")
                 };
-                println!("{} ... {}", &name, "ok".green());
+                println!("test {} ... {}", &name, "ok".green());
             }
 
             println!();
@@ -140,7 +140,7 @@ impl Manager {
                 } else {
                     vec![workspace_name.as_str(), test_name.as_str()].join("/")
                 };
-                print!("{} ... ", name);
+                print!("test {} ... {}", name, "FAILED".red());
                 print_diff(&test_result.output, &test_result.tobe);
             }
         }
